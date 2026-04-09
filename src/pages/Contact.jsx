@@ -3,7 +3,7 @@ import { Mail, MapPin, Phone, Clock } from 'lucide-react';
 const contactDetails = [
   {
     title: 'Phone',
-    value: '+234 800 000 0000',
+    value: '+44 7438 857206',
     icon: Phone,
   },
   {
@@ -13,7 +13,7 @@ const contactDetails = [
   },
   {
     title: 'Address',
-    value: '14 Sanctuary Drive, Lagos',
+    value: 'Cameron Court, Cameron St Hilington Glasgow Scotland G72 2RU United Kingdom',
     icon: MapPin,
   },
   {
