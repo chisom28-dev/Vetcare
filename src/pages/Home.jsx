@@ -280,11 +280,10 @@ export default function Home() {
               return (
                 <motion.div
                   key={idx}
-                  variants={fadeInUp}
+                  variants={{...fadeInUp, ...cardHover}}
                   whileHover="hover"
                   initial="rest"
                   animate="rest"
-                  variants={cardHover}
                   className="bg-surface-container-low p-8 rounded-xl text-center"
                 >
                   <motion.div 
