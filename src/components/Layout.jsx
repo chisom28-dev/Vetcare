@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShieldCheck, User, Calendar, Stethoscope, Clock, Activity, ArrowRight, PlayCircle, CheckCircle2, Search, Filter, MoreVertical, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+// import { smoothEase } from '../lib/animations';
 
 export default function Layout() {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -64,8 +69,7 @@ export default function Layout() {
                   <Link 
                     key={link.path}
                     to={link.path} 
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`text-xl hover:bg:green-500 ${location.pathname === link.path ? 'text-[#0f5238]' : 'text-slate-600'}`}
+                    className={`text-xl transition-colors ${location.pathname === link.path ? 'text-[#0f5238]' : 'text-slate-600 hover:text-[#0f5238]'}`}
                   >
                     {link.name}
                   </Link>
@@ -84,7 +88,17 @@ export default function Layout() {
       </header>
 
       <div className="flex-grow">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.45, }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <footer className="bg-[#f2f4f3] w-full py-12 px-8 mt-auto">
