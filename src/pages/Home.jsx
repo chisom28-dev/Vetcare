@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Activity, PlayCircle, ArrowRight, CheckCircle2, Info, Calendar, Syringe, Dog, Cat, Rabbit, Quote, Star } from 'lucide-react';
-import { motion, useInView, useAnimation } from 'framer-motion';
-import { useRef, useEffect } from 'react';
+import { ShieldCheck, Activity, PlayCircle, ArrowRight, CheckCircle2, Info, Calendar, Syringe, Dog, Cat, Rabbit, Quote, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, useInView, useAnimation, AnimatePresence } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 
 // Animation variants
 const fadeInUp = {
@@ -52,10 +52,22 @@ const floatInfinite = {
   }
 };
 
-const scalePulse = {
-  rest: { scale: 1 },
-  hover: { scale: 1.05, transition: { duration: 0.2 } },
-  tap: { scale: 0.95 }
+// Carousel variants
+const carouselVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 300 : -300,
+    opacity: 0
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeInOut" }
+  },
+  exit: (direction) => ({
+    x: direction > 0 ? -300 : 300,
+    opacity: 0,
+    transition: { duration: 0.5, ease: "easeInOut" }
+  })
 };
 
 export default function Home() {
@@ -87,8 +99,42 @@ export default function Home() {
       author: "Emily Watson",
       pet: "Oliver (Holland Lop)",
       rating: 5
+    },
+    {
+      quote: "The care my senior dog received was beyond compare. VetCare's team is knowledgeable and genuinely compassionate.",
+      author: "David Thompson",
+      pet: "Bailey (Labrador)",
+      rating: 5
+    },
+    {
+      quote: "From emergency visits to routine checkups, VetCare has been our trusted partner for over a decade. Highly recommended!",
+      author: "Priya Sharma",
+      pet: "Milo (Maine Coon)",
+      rating: 5
     }
   ];
+
+  // Carousel state
+  const [[page, direction], setPage] = useState([0, 0]);
+  const testimonialsPerPage = 3;
+  const totalPages = Math.ceil(testimonials.length / testimonialsPerPage);
+
+  const paginate = (newDirection) => {
+    const newPage = page + newDirection;
+    if (newPage >= 0 && newPage < totalPages) {
+      setPage([newPage, newDirection]);
+    }
+  };
+
+  const goToPage = (index) => {
+    const newDirection = index > page ? 1 : -1;
+    setPage([index, newDirection]);
+  };
+
+  const visibleTestimonials = testimonials.slice(
+    page * testimonialsPerPage,
+    page * testimonialsPerPage + testimonialsPerPage
+  );
 
   return (
     <main className="pt-20 overflow-x-hidden">
@@ -571,7 +617,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Carousel Section */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
@@ -586,49 +632,104 @@ export default function Home() {
               Hear from the pet owners who trust us with their companion's health and happiness.
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <motion.div 
-                key={i} 
-                variants={fadeInUp}
-                whileHover={{ y: -12 }}
-                className="bg-surface-container-low p-8 rounded-2xl shadow-sm border border-outline-variant/10 relative flex flex-col"
-              >
-                <motion.div 
-                  initial={{ rotate: -10, scale: 0 }}
-                  whileInView={{ rotate: 0, scale: 1 }}
-                  transition={{ delay: i * 0.1, type: "spring" }}
-                  className="absolute -top-4 left-8 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-on-primary shadow-lg"
+
+          {/* Carousel Container */}
+          <div className="relative">
+            <div className="overflow-hidden">
+              <AnimatePresence mode="wait" custom={direction} initial={false}>
+                <motion.div
+                  key={page}
+                  custom={direction}
+                  variants={carouselVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8"
                 >
-                  <Quote className="w-5 h-5" />
-                </motion.div>
-                <div className="flex gap-1 mb-4 mt-2">
-                  {[...Array(t.rating)].map((_, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.1 + idx * 0.1 }}
+                  {visibleTestimonials.map((t, i) => (
+                    <motion.div 
+                      key={i}
+                      whileHover={{ y: -12 }}
+                      className="bg-surface-container-low p-8 rounded-2xl shadow-sm border border-outline-variant/10 relative flex flex-col"
                     >
-                      <Star className="w-4 h-4 fill-secondary text-secondary" />
+                      <motion.div 
+                        initial={{ rotate: -10, scale: 0 }}
+                        whileInView={{ rotate: 0, scale: 1 }}
+                        transition={{ delay: i * 0.1, type: "spring" }}
+                        className="absolute -top-4 left-8 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-on-primary shadow-lg"
+                      >
+                        <Quote className="w-5 h-5" />
+                      </motion.div>
+                      <div className="flex gap-1 mb-4 mt-2">
+                        {[...Array(t.rating)].map((_, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 + idx * 0.1 }}
+                          >
+                            <Star className="w-4 h-4 fill-secondary text-secondary" />
+                          </motion.div>
+                        ))}
+                      </div>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-on-surface-variant italic mb-8 leading-relaxed flex-grow"
+                      >
+                        "{t.quote}"
+                      </motion.p>
+                      <div className="border-t border-outline-variant/20 pt-6">
+                        <h4 className="font-bold text-primary">{t.author}</h4>
+                        <p className="text-sm text-secondary font-medium">{t.pet}</p>
+                      </div>
                     </motion.div>
                   ))}
-                </div>
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-on-surface-variant italic mb-8 leading-relaxed flex-grow"
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation Arrows */}
+            {totalPages > 1 && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => paginate(-1)}
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 w-12 h-12 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center transition-opacity ${page === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-100 hover:bg-primary-fixed-dim'}`}
+                  disabled={page === 0}
                 >
-                  "{t.quote}"
-                </motion.p>
-                <div className="border-t border-outline-variant/20 pt-6">
-                  <h4 className="font-bold text-primary">{t.author}</h4>
-                  <p className="text-sm text-secondary font-medium">{t.pet}</p>
-                </div>
-              </motion.div>
-            ))}
+                  <ChevronLeft className="w-6 h-6" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => paginate(1)}
+                  className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 w-12 h-12 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center transition-opacity ${page === totalPages - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-100 hover:bg-primary-fixed-dim'}`}
+                  disabled={page === totalPages - 1}
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </motion.button>
+              </>
+            )}
           </div>
+
+          {/* Pagination Dots */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-3 mt-10">
+              {Array.from({ length: totalPages }).map((_, idx) => (
+                <motion.button
+                  key={idx}
+                  onClick={() => goToPage(idx)}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`w-3 h-3 rounded-full transition-all ${idx === page ? 'bg-primary scale-125' : 'bg-primary/30'}`}
+                  aria-label={`Go to page ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </motion.section>
 
