@@ -3,6 +3,7 @@ import { ShieldCheck, Activity, PlayCircle, ArrowRight, CheckCircle2, Info, Cale
 import { motion, useInView, useAnimation, AnimatePresence } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 
+
 // Animation variants
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -80,6 +81,55 @@ export default function Home() {
       heroControls.start("visible");
     }
   }, [isHeroInView, heroControls]);
+
+  // Hero carousel images and state (inside component)
+  const heroImages = [
+    {
+      src: "https://lh3.googleusercontent.com/aida-public/AB6AXuC3151_O9H6kbJyKTTUVkHnRTtNGGMJ41wAG1flLJEg8VMYfAf1lPXmWE_DqZfZ4FeXTfDBqO4M1l75zKgzdjSqwM7CWhrq1O_b-BPMIVLnrwmR2C_diHqTW2sl_y8p43BBm4czGUv1IAmvla29o3FueQoOsL77eFzDdH6xO0r147srD9b7eB3p_Pmta1wAiejpSUdQ8UG5gWlbI2XE3gLU2-mW7aJkzuJ6-gu2qEEYF16j-Wu00jdRahKz9IaURTVzvJWvVJUl8mr-",
+      alt: "Veterinarian holding a golden retriever"
+    },
+    {
+      src: "https://picsum.photos/seed/vet-clinic-1/800/1000",
+      alt: "Vet examining a cat"
+    },
+    {
+      src: "https://picsum.photos/seed/vet-clinic-2/800/1000",
+      alt: "Happy dog with vet"
+    },
+    {
+      src: "https://picsum.photos/seed/vet-clinic-3/800/1000",
+      alt: "Rabbit checkup"
+    }
+  ];
+
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroDirection, setHeroDirection] = useState(0);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
+
+  // Autoplay for hero carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isHeroHovered) {
+        setHeroDirection(1);
+        setHeroIndex((prev) => (prev + 1) % heroImages.length);
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isHeroHovered, heroImages.length]);
+
+  const heroPaginate = (newDirection) => {
+    setHeroDirection(newDirection);
+    if (newDirection === 1) {
+      setHeroIndex((prev) => (prev + 1) % heroImages.length);
+    } else {
+      setHeroIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+    }
+  };
+
+  const heroGoTo = (index) => {
+    setHeroDirection(index > heroIndex ? 1 : -1);
+    setHeroIndex(index);
+  };
 
   const testimonials = [
     {
@@ -199,40 +249,105 @@ export default function Home() {
           </motion.div>
           
           <motion.div 
-            variants={fadeInRight}
-            className="relative h-[500px] w-full hidden lg:block"
-          >
-            <motion.div 
-              initial={{ rotate: -2, scale: 0.8, opacity: 0 }}
-              animate={{ rotate: -2, scale: 1, opacity: 1 }}
-              transition={{ duration: 0.9, type: "spring", bounce: 0.3 }}
-              className="absolute inset-0 bg-primary-container/5 rounded-xl"
-            />
-            <motion.img 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3151_O9H6kbJyKTTUVkHnRTtNGGMJ41wAG1flLJEg8VMYfAf1lPXmWE_DqZfZ4FeXTfDBqO4M1l75zKgzdjSqwM7CWhrq1O_b-BPMIVLnrwmR2C_diHqTW2sl_y8p43BBm4czGUv1IAmvla29o3FueQoOsL77eFzDdH6xO0r147srD9b7eB3p_Pmta1wAiejpSUdQ8UG5gWlbI2XE3gLU2-mW7aJkzuJ6-gu2qEEYF16j-Wu00jdRahKz9IaURTVzvJWvVJUl8mr-" 
-              alt="Veterinarian holding a golden retriever" 
-              className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-2xl"
-              referrerPolicy="no-referrer"
-              initial={{ rotate: 1, scale: 0.9 }}
-              animate={{ rotate: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
-              whileHover={{ scale: 1.05, rotate: 0 }}
-            />
-            {/* Floating decorative elements */}
-            <motion.div
-              variants={floatInfinite}
-              initial="initial"
-              animate="animate"
-              className="absolute -top-4 -right-4 w-20 h-20 bg-secondary/20 rounded-full blur-2xl"
-            />
-            <motion.div
-              variants={floatInfinite}
-              initial="initial"
-              animate="animate"
-              transition={{ delay: 1.5 }}
-              className="absolute -bottom-6 -left-6 w-24 h-24 bg-primary/20 rounded-full blur-3xl"
-            />
-          </motion.div>
+  variants={fadeInRight}
+  className="relative h-[500px] w-full hidden lg:block"
+  onMouseEnter={() => setIsHeroHovered(true)}
+  onMouseLeave={() => setIsHeroHovered(false)}
+>
+  <motion.div 
+    initial={{ rotate: -2, scale: 0.8, opacity: 0 }}
+    animate={{ rotate: -2, scale: 1, opacity: 1 }}
+    transition={{ duration: 0.9, type: "spring", bounce: 0.3 }}
+    className="absolute inset-0 bg-primary-container/5 rounded-xl"
+  />
+  
+  <div className="absolute inset-0 rounded-xl overflow-hidden shadow-2xl">
+    <AnimatePresence mode="wait" custom={heroDirection} initial={false}>
+      <motion.img
+        key={heroIndex}
+        src={heroImages[heroIndex].src}
+        alt={heroImages[heroIndex].alt}
+        className="absolute inset-0 w-full h-full object-cover"
+        referrerPolicy="no-referrer"
+        custom={heroDirection}
+        variants={{
+          enter: (direction) => ({
+            x: direction > 0 ? 300 : -300,
+            opacity: 0,
+            rotate: direction > 0 ? 3 : -3
+          }),
+          center: {
+            x: 0,
+            opacity: 1,
+            rotate: 1,
+            transition: { duration: 0.6, ease: "easeInOut" }
+          },
+          exit: (direction) => ({
+            x: direction > 0 ? -300 : 300,
+            opacity: 0,
+            rotate: direction > 0 ? -3 : 3,
+            transition: { duration: 0.6, ease: "easeInOut" }
+          })
+        }}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        whileHover={{ scale: 1.05, rotate: 0 }}
+      />
+    </AnimatePresence>
+  </div>
+
+  {/* Navigation Dots */}
+  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+    {heroImages.map((_, idx) => (
+      <motion.button
+        key={idx}
+        onClick={() => heroGoTo(idx)}
+        whileHover={{ scale: 1.2 }}
+        whileTap={{ scale: 0.9 }}
+        className={`w-2.5 h-2.5 rounded-full transition-all ${
+          idx === heroIndex 
+            ? 'bg-primary scale-125 shadow-lg' 
+            : 'bg-white/60 hover:bg-white/80'
+        }`}
+        aria-label={`Go to slide ${idx + 1}`}
+      />
+    ))}
+  </div>
+
+  {/* Optional navigation arrows (uncomment if desired) */}
+  {/* <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={() => heroPaginate(-1)}
+    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/30 transition-all z-20"
+  >
+    <ChevronLeft className="w-5 h-5" />
+  </motion.button>
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={() => heroPaginate(1)}
+    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/30 transition-all z-20"
+  >
+    <ChevronRight className="w-5 h-5" />
+  </motion.button> */}
+
+  {/* Floating decorative elements remain */}
+  <motion.div
+    variants={floatInfinite}
+    initial="initial"
+    animate="animate"
+    className="absolute -top-4 -right-4 w-20 h-20 bg-secondary/20 rounded-full blur-2xl z-10"
+  />
+  <motion.div
+    variants={floatInfinite}
+    initial="initial"
+    animate="animate"
+    transition={{ delay: 1.5 }}
+    className="absolute -bottom-6 -left-6 w-24 h-24 bg-primary/20 rounded-full blur-3xl z-10"
+  />
+      </motion.div>
         </div>
       </motion.section>
 
