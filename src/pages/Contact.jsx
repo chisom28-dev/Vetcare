@@ -2,20 +2,11 @@ import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone, Clock, Send } from 'lucide-react';
 import Email from '../components/Email'
 const contactDetails = [
-  { title: 'Phone', value: '+44 7438 857206', icon: Phone },
+  { title: 'Phone', value: '+44 7770 037061', icon: Phone },
   { title: 'Email', value: 'infovetcare88@gmail.com', icon: Mail },
   { title: 'Address', value: 'Cameron Court, Glasgow G72 2RU', icon: MapPin },
   { title: 'Hours', value: 'Mon - Sat, 8:00 AM - 7:00 PM', icon: Clock },
 ];
-
-// --- Animation Variants ---
-
-
-
-
-
-
-
 
 const containerVariants = {
   hidden: { opacity: 0 },
